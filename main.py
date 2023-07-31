@@ -39,7 +39,7 @@ def index():
 
         arguments = request.form['arguments']
         print(arguments)
-        print("06:32")
+        print("06:3")
         usernames = request.form.getlist('usernames')
         servers = request.form.getlist('servers')
 
