@@ -382,7 +382,7 @@ def merger(tables_list,flag):
     print(result)
     global start_time
     print("--- %s seconds ---" % (time.time() - start_time))
-    print("ENDED !!!")
+    print("ENDED !!")
     return result
 
 
