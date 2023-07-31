@@ -114,6 +114,15 @@ def run(links,flag=False):
             executor.map(worker, links, [tables_list]*len(links))
 
 
+            #serialize talbes_list
+        with open('tables_list.pkl', 'wb') as f:
+            pickle.dump(list(tables_list), f)
+
+
+
+
+
+
 
         return merger(list(tables_list),flag)
 
@@ -133,8 +142,6 @@ def worker(k,tables_list):
     except WebDriverException as e:
         print("An error occurred while initializing the driver: ", e)
         sys.exit(1)
-
-    print("sequential execution")
 
     print(f"started {k}")
     driver.get(k)
@@ -241,7 +248,6 @@ def worker(k,tables_list):
         print(f"Recorded {season_names[j]} for {k}")
 
 
-    print(f"finished {k}")
 
     driver.quit()
 
@@ -249,9 +255,8 @@ def worker(k,tables_list):
 def merger(tables_list,flag):
 
     if flag:
-        with open('sample_data.pkl', 'rb') as file:
 
-            # Call load method to deserialze
+        with open('data/faker.pkl', 'rb') as file:
             tables_list = pickle.load(file)
 
 
@@ -382,7 +387,5 @@ def merger(tables_list,flag):
 
 
 
-
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=6000)
+    app.run(debug=True, host='0.0.0.0', port=8080)
