@@ -1,4 +1,5 @@
-import os
+# Author: Atahan Uz
+import sys
 import time
 from flask import Flask, render_template, request, send_file
 import urllib.parse
@@ -12,7 +13,6 @@ import concurrent.futures
 from selenium import webdriver
 from selenium.common import WebDriverException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 
 
 from time import sleep
@@ -25,15 +25,18 @@ app = Flask(__name__)
 df=None
 table_ready = False
 start_time= None
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    print("09:42 30 jul")
     global df
     global table_ready
     global arguments
+    global start_time
 
     if request.method == 'POST':
-        global arguments
+
+
         arguments = request.form['arguments']
         print(arguments)
         print("06:32")
@@ -43,42 +46,49 @@ def index():
 
         links=[]
         flag=False
+        sample=False
         for username, server in zip(usernames, servers):
-            if username=="0":
-                flag=True
-                break
+
 
             if username and server:
                 name = urllib.parse.quote(username)
                 string = f"https://www.op.gg/summoners/{server}/{name}/champions"
                 links.append(string)
 
+        if not links:
+            flag=True
+
         if flag:
             print("reading mode")
             links=[]
-        if not links:
-            links = ["https://www.op.gg/summoners/tr/Fight4Glory/champions",
-                     "https://www.op.gg/summoners/tr/AFC%20Unbreakable/champions",
-                     "https://www.op.gg/summoners/euw/Rammus%20Hates%20Us/champions",
-                     "https://www.op.gg/summoners/euw/JUNGLER%201%20vs%209/champions",
-                     "https://www.op.gg/summoners/tr/quankiLLeR/champions",
-                     "https://www.op.gg/summoners/tr/None%20Shall%20Live/champions"
-                     ]
+            sample=True
+
+
+        text = "Data for accounts:"
+        for link in links:
+            text += f"\n{link}"
+        print(text)
+
         df = run(links,flag)
+
         table_ready=True
-        #df = pd.read_csv('output.csv')
+
     if request.method == 'GET':
         table_ready=False
         df=None
+        #reset all variables
+
+        text = "Data for accounts:"
+        sample=False
 
 
 
-
-    # result_table will be accessible here now
     if df is not None:
-        return render_template('index.html', table=df.to_html(classes='data'),table_ready=table_ready)
+        return render_template('index.html', table=df.to_html(classes='data'),table_ready=table_ready,execution_time=time.time()-start_time,sample=sample,text=text)
     else:
         return render_template('index.html')
+
+
 
 @app.route('/download')
 def download():
@@ -91,6 +101,8 @@ def download():
 
 def run(links,flag=False):
     with Manager() as manager:
+        global start_time
+        start_time = time.time()
         tables_list = manager.list()  # Shared list
 
         print("started processing")
@@ -99,8 +111,6 @@ def run(links,flag=False):
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             print("concurrent execution")
-            global start_time
-            start_time = time.time()
             executor.map(worker, links, [tables_list]*len(links))
 
 
@@ -108,17 +118,7 @@ def run(links,flag=False):
         return merger(list(tables_list),flag)
 
 
-
-
-
-
-
-
-
-
-
 def worker(k,tables_list):
-
     options = webdriver.ChromeOptions()
     print("options created", options)
 
@@ -126,8 +126,13 @@ def worker(k,tables_list):
     print("headless added")
     options.add_argument("window-size=1920,1080")
     print("window size added")
-    driver = webdriver.Chrome(options=options)
-    print("driver created")
+
+    try:
+        driver = webdriver.Chrome(options=options)
+        print("driver created")
+    except WebDriverException as e:
+        print("An error occurred while initializing the driver: ", e)
+        sys.exit(1)
 
     print("sequential execution")
 
@@ -244,7 +249,7 @@ def worker(k,tables_list):
 def merger(tables_list,flag):
 
     if flag:
-        with open('file.pkl', 'rb') as file:
+        with open('sample_data.pkl', 'rb') as file:
 
             # Call load method to deserialze
             tables_list = pickle.load(file)
@@ -380,4 +385,4 @@ def merger(tables_list,flag):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=6000)

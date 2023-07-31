@@ -19,16 +19,21 @@
                 $("#entries").append('<div><input type="text" name="usernames" placeholder="Username" > @ <input type="text" name="servers" placeholder="Server" ></div>');
             });
             $("form").submit(function() {
-                $("#loading").show();
+                // find length of entries
+                var count = $("#entries").children().length - 1;
+                var accountText = count == 1 ? "account" : "accounts"; // decides whether to use "account" or "accounts" based on the value of count
+                $("#loading").show().text(`Gathering data for ${count} ${accountText}...`);
                 $("#table").hide();
                 $("#download").hide();
             });
         });
+
     </script>
 </head>
 <body>
 <p>Enter all of your accounts<br>
-    Example: Hide on bush @ KR</p>
+    Example: Hide on bush @ KR<br>
+    You can press submit without entering an account to see an example data</p>
 
 <form method="POST">
     <div id="entries">
@@ -45,9 +50,25 @@
     <input type="submit" value="Submit">
 </form>
 
-<p id="loading" style="display: none;">Gathering Data...</p>
+<p id="loading" style="display: none;"></p>
 
 <!-- Here is where the table will be displayed -->
+{% if sample %}
+<p>-- Displaying a sample data --</p>
+{% endif %}
+
+
+<div id="table" style="{{ 'display: none;' if not table_ready }}">
+    <p>Execution time: {{ execution_time }} seconds</p>
+</div>
+
+{% if not sample %}
+<div id="table" style="{{ 'display: none;' if not table_ready }}">
+    <p> {{ text | replace("\n", "<br>") | safe}} </p>
+</div>
+{% endif %}
+
+
 <form id="download" method="get" action="/download" style="{{ 'display: none;' if not table_ready }}">
     <button type="submit">Download CSV</button>
 </form>
@@ -56,7 +77,6 @@
     {{ table|safe }}
 </div>
 
-<!-- The download button -->
 
 </body>
 </html>
