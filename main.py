@@ -114,11 +114,6 @@ def run(links,flag=False):
             executor.map(worker, links, [tables_list]*len(links))
 
 
-            #serialize talbes_list
-        with open('tables_list.pkl', 'wb') as f:
-            pickle.dump(list(tables_list), f)
-
-
 
 
 
@@ -377,7 +372,7 @@ def merger(tables_list,flag):
 
 
     result = result.round(2)
-    result.to_csv('data.csv', index=False)
+    result.to_csv('result.csv', index=False)
 
     print(result)
     global start_time
@@ -388,4 +383,4 @@ def merger(tables_list,flag):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=8123)

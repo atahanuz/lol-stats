@@ -15,13 +15,13 @@ This script finds your all time ranked statistics (Season 1 to Season 13) across
 - Most deaths in a game
 - Total double,triple, quadra and penta kills
 - Average damage dealt
-- Average damage reveived
+- Average damage received
 
 for each champion and a grand total.
 
 
 ## Requirements
-The program needs some libaries to work. You can easily install them with a single command
+The program needs some libraries to work. You can easily install them with a single command
 ```
 pip install numpy pandas Flask selenium beautifulsoup4
 ```
@@ -50,7 +50,7 @@ The program uses Selenium for web scrapping. It opens Google Chrome in backgroun
 
 
 # Notes
-- The program fetches data from op.gg . If op.gg is unavaible the program won't work.
+- The program fetches data from op.gg . If op.gg is unavailable the program won't work.
 
 - Sometimes it takes long for op.gg to respond. In that case you may need to wait for 5-10 minutes. Track the progress from Python console, it should print the progress like:
 -
