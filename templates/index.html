@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enter Usernames and Servers</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .data {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .data th, .data td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $("#add").click(function() {
+                $("#entries").append('<div><input type="text" name="usernames" placeholder="Username" > @ <input type="text" name="servers" placeholder="Server" ></div>');
+            });
+            $("form").submit(function() {
+                $("#loading").show();
+                $("#table").hide();
+                $("#download").hide();
+            });
+        });
+    </script>
+</head>
+<body>
+<p>Enter all of your accounts<br>
+    Example: Hide on bush @ KR</p>
+
+<form method="POST">
+    <div id="entries">
+        <div>
+            <input type="text" name="arguments" placeholder="Enter Arguments">
+        </div>
+        <div>
+            <input type="text" name="usernames" placeholder="Username" > @ <input type="text" name="servers" placeholder="Server" >
+        </div>
+    </div>
+    <!-- Add Arguments field here -->
+
+    <button type="button" id="add">Add another account</button><br>
+    <input type="submit" value="Submit">
+</form>
+
+<p id="loading" style="display: none;">Gathering Data...</p>
+
+<!-- Here is where the table will be displayed -->
+<form id="download" method="get" action="/download" style="{{ 'display: none;' if not table_ready }}">
+    <button type="submit">Download CSV</button>
+</form>
+
+<div id="table" style="{{ 'display: none;' if not table_ready }}">
+    {{ table|safe }}
+</div>
+
+<!-- The download button -->
+
+</body>
+</html>
