@@ -55,7 +55,7 @@ The program uses Selenium for web scrapping. It opens Google Chrome in backgroun
 - Sometimes it takes long for op.gg to respond. In that case you may need to wait for 5-10 minutes. Track the progress from Python console, it should print the progress like:
 -
 ```
-  driver created
+driver created
 Recorded Season 2022 for https://www.op.gg/summoners/kr/hide%20on%20bush/champions
 Recorded Season 2021 for https://www.op.gg/summoners/kr/hide%20on%20bush/champions
 ```
