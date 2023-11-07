@@ -1,6 +1,12 @@
 # Author: Atahan Uz
+# https://github.com/atahanuz/lol-stats
+
+import re
 import sys
 import time
+from io import StringIO
+from operator import or_
+
 from flask import Flask, render_template, request, send_file
 import urllib.parse
 from multiprocessing import Manager
@@ -10,15 +16,23 @@ import numpy as np
 from urllib.parse import urlparse, unquote
 
 import concurrent.futures
-from selenium import webdriver
 from selenium.common import WebDriverException
 from selenium.webdriver.common.by import By
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from sh import TimeoutException
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support import expected_conditions as EC
 
 
 from time import sleep
 from bs4 import BeautifulSoup
 import pandas as pd
 from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+import concurrent.futures
+
+
 
 
 app = Flask(__name__)
@@ -99,6 +113,7 @@ def download():
     return send_file('output.csv', as_attachment=True)
 
 
+
 def run(links,flag=False):
     with Manager() as manager:
         global start_time
@@ -108,6 +123,7 @@ def run(links,flag=False):
         print("started processing")
 
         global arguments
+
 
         with concurrent.futures.ProcessPoolExecutor() as executor:
             print("concurrent execution")
@@ -122,26 +138,24 @@ def run(links,flag=False):
         return merger(list(tables_list),flag)
 
 
+
+
 def worker(k,tables_list):
     options = webdriver.ChromeOptions()
-    print("options created", options)
-
-    options.add_argument("--headless")
-    print("headless added")
-    options.add_argument("window-size=1920,1080")
-    print("window size added")
-
-    try:
-        driver = webdriver.Chrome(options=options)
-        print("driver created")
-    except WebDriverException as e:
-        print("An error occurred while initializing the driver: ", e)
-        sys.exit(1)
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
 
     print(f"started {k}")
     driver.get(k)
-    WebDriverWait(driver, 10).until(
-        lambda driver: driver.execute_script('return document.readyState') == 'complete')
+    try:
+        WebDriverWait(driver, 10).until(
+            lambda x: x.execute_script('return document.readyState') == 'complete')
+        print("Page is fully loaded.")
+    except TimeoutException:
+        print("Loading took too much time! Exiting the program.")
+        driver.quit()
+        raise SystemExit("Web page didn't load in time.")
+
 
 
     main_button = driver.find_element(By.XPATH, '//span[text()="Season 2023 S2"]')
@@ -160,15 +174,54 @@ def worker(k,tables_list):
         button = driver.find_element(By.XPATH, f'//button[normalize-space()="{season_names[j]}"]')
 
         driver.execute_script("arguments[0].click();", button)
+        time1 = time.time()
 
-        # click the button
+        '''
+        disable_css_animations = """
+            let styleSheet = document.createElement("style");
+            styleSheet.type = "text/css";
+            styleSheet.innerText = `* {
+                transition: none !important;
+                animation-duration: 0s !important;
+                animation-delay: 0s !important;
+            }`;
+            document.head.appendChild(styleSheet);
+            """
 
-        sleep(1)
+        # Overwriting requestAnimationFrame to do nothing
+        disable_js_animations = """
+            window.requestAnimationFrame = function(callback) {
+                return -1;
+            }
+            """
 
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        driver.execute_script(disable_css_animations)
+        driver.execute_script(disable_js_animations)
+        '''
+
+
+
+        element_xpath = '//*[@id="content-container"]/div/table/tbody/tr/td/div/div/p'
+        element_xpath_2='//*[@id="content-container"]/div/table/tbody/tr[1]/td[2]/div/div[2]/a'
+
+
+        #wait until either of the elements is visible
+
+        WebDriverWait(driver, 10).until(
+            EC.any_of(
+                EC.visibility_of_element_located((By.XPATH, element_xpath)),
+                EC.visibility_of_element_located((By.XPATH, element_xpath_2))
+            )
+        )
+
+
+        time2= time.time()
+        print(f"waited !! {time2-time1} seconds")
+
+
+
 
         # suppose we're looking for a table on the web page
-        table = soup.find('table')
 
         # get the page source and parse it with BeautifulSoup
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -177,7 +230,7 @@ def worker(k,tables_list):
         tables = soup.find_all('table')
 
         # convert the first table to a Pandas DataFrame and print it
-        df = pd.read_html(str(tables[0]))[0]
+        df = pd.read_html(   StringIO(str(tables[0]))  )  [0]
         if df.shape == (1, 1):
             print(f"no data for {k} at {season_names[j]}")
             continue
@@ -241,6 +294,7 @@ def worker(k,tables_list):
         filename = unquote(urlparse(k).path.split('/')[3]).replace(' ', '_')
         print(filename)
         print(f"Recorded {season_names[j]} for {k}")
+    print(f"ended {k} with {len(tables_list)} seasons")
 
 
 
@@ -266,6 +320,24 @@ def merger(tables_list,flag):
     merged['weighted_deaths'] = merged['Death'] * merged['Games']
     merged['weighted_assists'] = merged['Assist'] * merged['Games']
 
+    def extract_and_convert(value):
+        # Cast value to string for regex processing
+        value_str = str(value)
+
+        # Extract the first number using regex
+        match = re.search(r'([\d,]+)', value_str)
+        if match:
+            number_str = match.group(1)
+            # Remove commas and convert to float
+            return float(number_str.replace(',', ''))
+        return None  # or return 0 if you prefer
+
+    # Apply the function to the column
+    merged['Gold'] = merged['Gold'].apply(extract_and_convert)
+    merged['CS'] = merged['CS'].apply(extract_and_convert)
+    merged['Average Damage Dealt'] = merged['Average Damage Dealt'].apply(extract_and_convert)
+    merged['Average Damage Taken'] = merged['Average Damage Taken'].apply(extract_and_convert)
+
     # update the aggregation rules to include the new column
     aggregation_rules = {
         'Games': 'sum',
@@ -286,6 +358,7 @@ def merger(tables_list,flag):
         'weighted_assists': 'sum',  # sum of weighted assists
     }
 
+    aggregation_rules = {k: v for k, v in aggregation_rules.items() if k in merged.columns}
 
     result = merged.groupby('Champion').agg(aggregation_rules).reset_index()
     total_kills=result['weighted_kills'].sum()
