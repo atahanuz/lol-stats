@@ -40,6 +40,9 @@ https://googlechromelabs.github.io/chrome-for-testing/#stable
 
 Note: The program is multithreaded to process multiple accounts as quickly as possible. This may cause high CPU and RAM usage, which is normal.
 
+## Example Output
+<img src="https://i.imgur.com/58BJ7jG.png" width="100%" height="100%">
+
 
 
 ## How it works
