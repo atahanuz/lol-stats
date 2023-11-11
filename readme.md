@@ -1,5 +1,5 @@
 # lol-stats
-Python script to find your League of Legends ranked statistics across all of your accounts.
+Python library to find your League of Legends ranked statistics across all of your accounts.
 This script finds your all time ranked statistics (Season 1 to Season 13) across all of your accounts and merges them. You will see your:
 - Total Games
 - Total Wins
