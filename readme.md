@@ -21,7 +21,7 @@ for each champion and a grand total.
 
 
 ## Installation
-```
+```python
 pip install lol-stats
 ```
 
@@ -30,7 +30,7 @@ Google Chrome must be installed on your system. The program automatically instal
 ## Usage
 Lauch the program:
 
-```
+```python
 import lol_stats
 
 lol_stats.launch()
@@ -40,7 +40,7 @@ http://localhost:8126 from a browser to interact with the program.
 
 To run the program on a different port, you pass an optional argument to launch() function:
 
-```
+```python
 lol_stats.launch(port=1234)
 ```
 
