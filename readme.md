@@ -93,8 +93,8 @@ ENDED !
 ```
 
 ## Contact
-For problems or suggestions raise an issue in this repo and I'll happily respond.
-You can mail me at atahanuz23@gmail.com , but it'd be better if you raise an issue so everyone can see and contribute to the discussion. It also sends a notification to my phone so I can respond faster.
+For problems or suggestions raise an Issue in this repo and I'll happily respond.
+You can mail me at atahanuz23@gmail.com but it'd be better if you raise an Issue so everyone can see and contribute to the discussion. It also sends a notification to my phone so I can respond faster.
 
 
 
